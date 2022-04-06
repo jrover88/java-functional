@@ -4,42 +4,55 @@ import com.endava.internship.domain.Privilege;
 import com.endava.internship.domain.User;
 import com.endava.internship.service.UserService;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class UserServiceImpl implements UserService {
 
     @Override
     public List<String> getFirstNamesReverseSorted(List<User> users) {
-        throw new UnsupportedOperationException("Not implemented");
+
+        return users.stream().sorted((u1, u2) -> u2.getFirstName().compareTo(u1.getFirstName()))
+                .map(User::getFirstName).collect(Collectors.toList());
     }
 
     @Override
     public List<User> sortByAgeDescAndNameAsc(final List<User> users) {
-        throw new UnsupportedOperationException("Not implemented");
+
+        return users.stream().sorted((u1, u2) -> u1.getAge().equals(u2.getAge()) ?
+                        u1.getFirstName().compareTo(u2.getFirstName()) :
+                        u2.getAge().compareTo(u1.getAge()))
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<Privilege> getAllDistinctPrivileges(final List<User> users) {
-        throw new UnsupportedOperationException("Not implemented");
+        return users.stream().flatMap(user -> user.getPrivileges().stream())
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     @Override
     public Optional<User> getUpdateUserWithAgeHigherThan(final List<User> users, final int age) {
-        throw new UnsupportedOperationException("Not implemented");
+        return users.stream().filter(user -> user.getAge() > age)
+                .findAny();
     }
 
     @Override
     public Map<Integer, List<User>> groupByCountOfPrivileges(final List<User> users) {
-        throw new UnsupportedOperationException("Not implemented");
+        return users.stream()
+                .collect(Collectors.groupingBy(user -> user.getPrivileges().size(),
+                        Collectors.toList())
+                );
     }
 
     @Override
     public double getAverageAgeForUsers(final List<User> users) {
-        throw new UnsupportedOperationException("Not implemented");
+        return users.stream().mapToDouble(User::getAge)
+                .summaryStatistics().getAverage();
     }
 
     @Override
@@ -49,21 +62,28 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> filterBy(final List<User> users, final Predicate<User>... predicates) {
-        throw new UnsupportedOperationException("Not implemented");
+        return users.stream()
+                .filter(Arrays.stream(predicates).reduce(x -> true, Predicate::and))
+                .collect(Collectors.toList());
     }
 
     @Override
     public String convertTo(final List<User> users, final String delimiter, final Function<User, String> mapFun) {
-        throw new UnsupportedOperationException("Not implemented");
+        return users.stream().map(mapFun)
+                .collect(Collectors.joining(delimiter));
     }
 
     @Override
     public Map<Privilege, List<User>> groupByPrivileges(List<User> users) {
-        throw new UnsupportedOperationException("Not implemented");
+        return users.stream().
+                flatMap(user -> user.getPrivileges().stream())
+                .collect(Collectors.groupingBy(Privilege, Collectors.toList()));
     }
 
     @Override
     public Map<String, Long> getNumberOfLastNames(final List<User> users) {
         throw new UnsupportedOperationException("Not implemented");
+//        return users.stream().collect(Collectors.groupingBy(User::getLastName,
+//                ));
     }
 }
