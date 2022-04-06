@@ -52,12 +52,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public double getAverageAgeForUsers(final List<User> users) {
         return users.stream().mapToDouble(User::getAge)
-                .summaryStatistics().getAverage();
+                .average().orElse(-1.0);
     }
 
     @Override
     public Optional<String> getMostFrequentLastName(final List<User> users) {
-        throw new UnsupportedOperationException("Not implemented");
+
+        return users
+                .stream()
+                .collect(Collectors.groupingBy(User::getLastName))
+                .entrySet()
+                .stream()
+                .filter(name -> name.getValue().size() > 1)
+                .max(Comparator.comparingInt(lastName -> lastName.getValue().size()))
+                .map(Map.Entry::getKey);
+
     }
 
     @Override
@@ -75,15 +84,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Map<Privilege, List<User>> groupByPrivileges(List<User> users) {
-        return users.stream().
-                flatMap(user -> user.getPrivileges().stream())
-                .collect(Collectors.groupingBy(Privilege, Collectors.toList()));
+        return users.stream()
+                .flatMap(user -> user.getPrivileges().stream()
+                        .map(privilege -> new AbstractMap.SimpleEntry<>(privilege, user)))
+                .collect(Collectors.groupingBy(Map.Entry::getKey,
+                        Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
     }
 
     @Override
     public Map<String, Long> getNumberOfLastNames(final List<User> users) {
-        throw new UnsupportedOperationException("Not implemented");
-//        return users.stream().collect(Collectors.groupingBy(User::getLastName,
-//                ));
+        return users.stream()
+                .collect(Collectors.groupingBy(
+                        User::getLastName, Collectors.counting()
+                        )
+                );
     }
 }
