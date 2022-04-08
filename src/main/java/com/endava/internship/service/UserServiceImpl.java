@@ -22,9 +22,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> sortByAgeDescAndNameAsc(final List<User> users) {
 
-        return users.stream().sorted((u1, u2) -> u1.getAge().equals(u2.getAge()) ?
-                        u1.getFirstName().compareTo(u2.getFirstName()) :
-                        u2.getAge().compareTo(u1.getAge()))
+        return users.stream().sorted(Comparator
+                        .comparing(User::getAge).reversed().thenComparing(User::getFirstName))
                 .collect(Collectors.toList());
     }
 
